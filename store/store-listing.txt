@@ -1,0 +1,70 @@
+WOLF CLASH ARENA: GOOGLE PLAY STORE LISTING
+(Copy each field into Play Console → Grow users → Store presence → Main store listing)
+
+APP NAME  (16/30 characters)
+Wolf Clash Arena
+
+SHORT DESCRIPTION  (79/80 characters)
+Outrun bigger wolves, eat and grow up to five heads, then clash the Alpha boss!
+
+FULL DESCRIPTION  (1488/4000 characters)
+Run, hunt and grow in a moonlit forest arena where bigger wolves are always on your trail.
+
+Start as a small wolf. Eat meat, catch rabbits and pounce on smaller wolves to grow stronger. Every wolf shows its power above its head: green ones you can eat, red ones will eat you. Dodge the hunters, use your dash to escape and keep growing.
+
+GROW EXTRA HEADS
+As your wolf gets bigger it sprouts new heads, up to five. Every new head gives you:
+• A stronger bite, so you can take down wolves bigger than you
+• An extra heart to survive more bites
+• A little more speed
+
+SURVIVE THE HUNT
+More hunters join the chase the longer you last. Red arrows at the edge of the screen warn you where danger is coming from. Lose all your hearts and you're knocked out.
+
+CLASH THE ALPHA
+When you're knocked out, your wolf charges the giant Alpha boss. Every bit of your size hits the boss, and every head multiplies the damage. Defeat the Alpha for a big bonus and face a tougher one next time.
+
+FEATURES
+• Simple one-finger controls: touch and drag anywhere to run
+• Dash button for quick escapes
+• Grow from one head to five heads
+• Alpha boss fights with levels that get harder
+• Score for survival time, food, wolves eaten and boss damage
+• Your best score is saved on your phone
+
+Wolf Clash Arena needs an internet connection to play. The game is free and contains ads, including optional reward ads that let you revive or double your boss score.
+
+Questions or feedback? Write to learnnewhere@gmail.com
+
+---------------------------------------------------------------
+STORE SETTINGS  (Store presence → Store settings)
+App or game:        Game
+Category:           Action  (alternative: Arcade)
+Tags (up to 5):     Action, Arcade, Casual, Single player
+                    (skip "Offline": the game needs internet)
+Contact email:      learnnewhere@gmail.com
+Website:            optional, leave empty unless you have one
+Privacy policy URL: the published "Wolf Clash Arena Privacy Policy" page
+                    (open it, Share → make it public / anyone with the link, then paste that link)
+
+GRAPHICS  (files in store-graphics.zip)
+App icon:           icon-512.png              512 x 512 PNG
+Feature graphic:    feature-graphic-1024x500.jpg  1024 x 500 JPEG
+Phone screenshots:  screenshot-1.png ... screenshot-4.png   1080 x 1920 PNG (9:16)
+                    1 Menu (five-headed wolf)  2 Chase with hunters  3 Five heads  4 Alpha boss clash
+
+---------------------------------------------------------------
+APP CONTENT ANSWERS  (Policy → App content)
+Ads:                Yes, my app contains ads
+Target audience:    13-15, 16-17, 18 and over  (do NOT include under 13)
+Data safety (from Google's AdMob disclosure for SDK 25.5.0):
+  Does your app collect or share user data?  Yes
+  Is all data encrypted in transit?          Yes
+  Can users request deletion?                No account/data held by developer; data is on-device.
+  Data types (collected AND shared, purposes: Advertising or marketing, Analytics, Fraud prevention/security):
+    - Location → Approximate location   (estimated from IP address by AdMob)
+    - App activity → App interactions
+    - App info and performance → Diagnostics
+    - Device or other IDs
+Content rating:     answer the questionnaire honestly; cartoon animals biting
+                    (no blood, no humans) is usually rated "fantasy/cartoon violence".

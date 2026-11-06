@@ -1,0 +1,1045 @@
+<title>Wolf Clash Ad Preview</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700&display=swap">
+<style>
+/* Layout: one full-bleed canvas, a moonlit forest arena. Single dark look by choice. */
+:root {
+  --bg: #0b1410;
+  --ground: #172a1f;
+  --fg: #ffffff;
+  --amber: #ffc247;
+  --danger: #ff3b3b;
+  --display: "Bungee", "Arial Black", Impact, sans-serif;
+  --body: "Rubik", "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--body);
+  overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
+}
+#game { display: block; width: 100%; height: 100%; outline: none; cursor: crosshair; }
+#game:focus-visible { box-shadow: inset 0 0 0 3px var(--amber); }
+</style>
+
+
+<style>
+#adLayer { position: fixed; inset: 0; z-index: 50; background: rgba(4,8,6,0.94); display: flex; align-items: center; justify-content: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); font-family: "Rubik", "Segoe UI", Roboto, sans-serif; }
+#adCard { width: min(100%, 420px); background: #f4f6fb; color: #1b2230; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+#adTop { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #e3e8f2; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4a5568; }
+#adTimer { font-variant-numeric: tabular-nums; }
+#adClose { border: 0; border-radius: 999px; padding: 6px 14px; font: inherit; font-weight: 700; background: #1b2230; color: #fff; cursor: pointer; }
+#adClose:focus-visible { outline: 3px solid #ffc247; outline-offset: 2px; }
+#adBody { padding: 28px 22px 24px; text-align: center; display: grid; gap: 10px; }
+#adArt { height: 170px; border-radius: 12px; background: linear-gradient(135deg, #2b5236, #172a1f 60%, #3b2350); display: grid; place-items: center; color: #e8eefa; font-family: "Bungee", "Arial Black", sans-serif; font-size: 26px; position: relative; overflow: hidden; }
+#adArt::after { content: ""; position: absolute; width: 60px; height: 60px; border-radius: 50%; background: #e8eefa; top: 18px; right: 22px; opacity: 0.9; }
+#adBar { height: 6px; background: #d5dbe7; border-radius: 3px; overflow: hidden; }
+#adBar i { display: block; height: 100%; width: 0; background: #e0a100; transition: width 0.2s linear; }
+#adBody h2 { margin: 6px 0 0; font-size: 20px; text-wrap: balance; }
+#adBody p { margin: 0; color: #4a5568; font-size: 15px; line-height: 1.45; }
+#adPill { position: fixed; z-index: 40; left: max(10px, env(safe-area-inset-left, 0px)); top: calc(env(safe-area-inset-top, 0px) + 140px);
+  display: flex; gap: 6px; align-items: center; white-space: nowrap; max-width: calc(100% - 20px); font: 700 11px "Rubik", "Segoe UI", sans-serif;
+  background: rgba(224,161,0,0.95); color: #1b1300; padding: 6px 8px 6px 12px; border-radius: 999px; }
+#adPill button { border: 0; border-radius: 999px; padding: 5px 10px; font: inherit; background: #1b1300; color: #ffe08a; cursor: pointer; }
+#adPill button:focus-visible { outline: 2px solid #fff; }
+#adLayer[hidden], #adPill [hidden], #adClose[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { #adBar i { transition: none; } }
+</style>
+<div id="adPill" role="status"><span id="adPillText">Sample ads</span><button id="adKO" type="button">Knock me down</button></div>
+<div id="adLayer" hidden>
+  <div id="adCard" role="dialog" aria-modal="true" aria-labelledby="adTitle">
+    <div id="adTop"><span id="adKind">Sample ad</span><span id="adTimer"></span><button id="adClose" type="button" hidden>Close ✕</button></div>
+    <div id="adBody">
+      <div id="adArt">AD SPACE</div>
+      <div id="adBar"><i></i></div>
+      <h2 id="adTitle">A Google AdMob ad plays here</h2>
+      <p id="adText">In the real app this is a video or full-screen ad from AdMob.</p>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  // Simulated AdMob bridge: same interface as WolfAds in the Android app.
+  const layer = document.getElementById("adLayer"), closeB = document.getElementById("adClose"),
+        timerEl = document.getElementById("adTimer"), kind = document.getElementById("adKind"),
+        bar = document.querySelector("#adBar i"), title = document.getElementById("adTitle"), txt = document.getElementById("adText");
+  let tick = null, runs = 0;
+  function play(opts, done) {
+    kind.textContent = opts.kind; title.textContent = opts.title; txt.textContent = opts.text;
+    closeB.hidden = true; layer.hidden = false; bar.style.width = "0%";
+    let left = opts.seconds, earned = false;
+    const render = () => { timerEl.textContent = left > 0 ? (opts.rewarded ? "Reward in " : "Close in ") + left + "s" : (opts.rewarded ? "Reward earned ✓" : ""); bar.style.width = (100 * (opts.seconds - left) / opts.seconds) + "%"; };
+    render();
+    tick = setInterval(() => { left--; if (left <= 0) { clearInterval(tick); earned = true; closeB.hidden = false; closeB.focus(); } render(); }, 1000);
+    closeB.onclick = () => { clearInterval(tick); layer.hidden = true; done(earned); document.getElementById("game").focus(); };
+  }
+  window.WolfAds = {
+    rewardedReady: () => true,
+    interstitialReady: () => true,
+    privacyRequired: () => false,
+    showPrivacy: () => {},
+    showRewarded: tag => play({
+      kind: "Sample rewarded ad", rewarded: true, seconds: 5,
+      title: tag === "double" ? "Watch to double your boss score" : "Watch to revive with full hearts",
+      text: "In the real app, AdMob plays a short video here. The reward is given only if the player watches to the end."
+    }, earned => window.onAdReward && window.onAdReward(tag, earned)),
+    showInterstitial: () => play({
+      kind: "Sample full-screen ad", rewarded: false, seconds: 3,
+      title: "Full-screen ad between runs",
+      text: "Shown at most every 3rd run, never during play, and skipped in runs where the player already watched a reward ad."
+    }, () => window.onAdClosed && window.onAdClosed())
+  };
+  document.getElementById("adKO").onclick = () => { const g = window.__wolf; if (g && g.state === 1) g.down(); };
+  setInterval(() => {
+    const g = window.__wolf; if (!g) return;
+    let n = 0; try { n = parseInt(localStorage.getItem("wca_runsSinceAd") || "0", 10); } catch (e) {}
+    const st = g.state;
+    const k = Math.max(0, 3 - n);
+    document.getElementById("adPillText").textContent = "Sample ads · " + (k === 0 ? "full-screen ad after this run" : "full-screen ad in " + k + " run" + (k === 1 ? "" : "s"));
+    document.getElementById("adKO").hidden = st !== 1;
+  }, 400);
+})();
+</script>
+
+<canvas id="game" tabindex="0" aria-label="Wolf Clash Arena game. Drag or use arrow keys to run, space to dash."></canvas>
+
+<script>
+(() => {
+"use strict";
+const cv = document.getElementById("game");
+const ctx = cv.getContext("2d");
+const DISPLAY = '"Bungee", "Arial Black", Impact, sans-serif';
+const BODY = '"Rubik", "Segoe UI", Roboto, sans-serif';
+
+// ---------------- storage (per-viewer, optional) ----------------
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("wca_" + k); return v == null ? d : parseInt(v, 10); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("wca_" + k, String(v)); } catch (e) {} }
+};
+
+// ---------------- internet gate ----------------
+// In the Android app a native bridge does a real HTTPS check; in a browser we use the online signal.
+const NET = { CHECKING: 0, ONLINE: 1, OFFLINE: 2 };
+const bridge = window.WolfBridge || null;
+const net = {
+  state: NET.CHECKING, until: 0,
+  check() { if (bridge) { try { bridge.retry(); } catch (e) {} } this.state = NET.CHECKING; this.until = performance.now() + 700; },
+  tick(now) {
+    if (bridge) { try { this.state = bridge.netState(); } catch (e) { this.state = NET.OFFLINE; } return; }
+    if (this.state === NET.CHECKING && now < this.until) return;
+    this.state = navigator.onLine ? NET.ONLINE : NET.OFFLINE;
+  },
+  online() { return this.state === NET.ONLINE; }
+};
+net.check();
+addEventListener("online", () => net.check());
+addEventListener("offline", () => { if (!bridge) net.state = NET.OFFLINE; });
+
+// ---------------- ads (Android app only; absent in a browser) ----------------
+const ads = window.WolfAds || null;
+const adCall = (fn, ...a) => { try { return ads ? ads[fn](...a) : false; } catch (e) { return false; } };
+const rewardedReady = () => !!adCall("rewardedReady");
+let revived = false, doubled = false, adBusy = false, pendingAfterAd = null, watchedRewardThisRun = false;
+let runsSinceInterstitial = store.get("runsSinceAd", 0);
+let reviveT = 0, reviveWaiting = false;
+const INTERSTITIAL_EVERY = 3;
+
+// ---------------- tuning ----------------
+const PLAYER = 0, HUNTER = 1, PREY = 2;
+const WORLD = 3600, FOOD_BASE = 520, FOOD_MAX = 1200, PLAYER_SPEED = 250, START_MASS = 10;
+const HEAD_AT = [0, 60, 150, 300, 520];          // mass needed for 1..5 heads
+const HEAD_NAMES = ["", "ONE HEAD", "TWO HEADS!", "THREE HEADS!", "FOUR HEADS!", "FIVE HEADS!"];
+const powerMul = h => 1 + 0.25 * (h - 1);       // each extra head = +25% bite power
+const headsFor = m => { let h = 1; for (let i = 1; i < HEAD_AT.length; i++) if (m >= HEAD_AT[i]) h = i + 1; return h; };
+const PALETTES = [
+  { c1: "#8d939c", c2: "#5b6068", c3: "#d6d9de", eye: "#ffd23f" },
+  { c1: "#4a4d55", c2: "#2b2d33", c3: "#8e9199", eye: "#ff3b3b" },
+  { c1: "#b5563a", c2: "#7a3322", c3: "#e9b796", eye: "#ffd23f" },
+  { c1: "#8a6a4a", c2: "#5a432d", c3: "#d8c3a5", eye: "#ffb03b" },
+  { c1: "#e8edf2", c2: "#aab4bf", c3: "#ffffff", eye: "#59c7ff" }
+];
+const PLAYER_PAL = { c1: "#6f8fb8", c2: "#3f5878", c3: "#d9e6f5", eye: "#ffd740" };
+const BOSS_PAL = { c1: "#3b2350", c2: "#22122f", c3: "#7d5a99", eye: "#ff2a2a" };
+const TOUCH = (() => { try { return matchMedia("(pointer: coarse)").matches; } catch (e) { return false; } })();
+const rnd = Math.random;
+const clamp = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
+const dist = (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by);
+const normAngle = a => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
+
+// ---------------- Wolf ----------------
+class Wolf {
+  constructor(type, x, y, angle, mass, pal) {
+    Object.assign(this, { type, x, y, angle, pal, alive: true, life: 0, maxLife: 9999, leaving: false,
+      wanderTimer: 0, wanderAngle: angle, flash: 0, phase: rnd() * 6, biteT: 0, kx: 0, ky: 0, speed: 200, turnRate: 3 });
+    this.facing = Math.cos(angle) >= 0 ? 1 : -1;
+    this.mass = Math.max(1, mass); this.heads = headsFor(this.mass);
+  }
+  get r() { return 30 + Math.sqrt(Math.min(this.mass, 2000)) * 2.2; }
+  power() { return Math.round(this.mass * powerMul(this.heads)); }
+  grow(d) { this.mass = Math.max(3, this.mass + d); const h = headsFor(this.mass); const up = h > this.heads; if (up) this.heads = h; return up; }
+  move(dt, target, mul, world) {
+    let diff = normAngle(target - this.angle); const mt = this.turnRate * dt;
+    this.angle = normAngle(this.angle + clamp(diff, -mt, mt));
+    const v = this.speed * mul * dt;
+    this.x += Math.cos(this.angle) * v + this.kx * dt; this.y += Math.sin(this.angle) * v + this.ky * dt;
+    this.kx *= 0.88; this.ky *= 0.88;
+    const r = this.r; this.x = clamp(this.x, r, world - r); this.y = clamp(this.y, r, world - r);
+    const want = Math.cos(this.angle) >= 0 ? 1 : -1;
+    this.facing += clamp(want - this.facing, -dt * 9, dt * 9);
+    this.phase += v / (r * 0.55);
+    if (this.flash > 0) this.flash -= dt;
+    if (this.biteT > 0) this.biteT -= dt;
+  }
+}
+
+// ---------------- state ----------------
+const MENU = 0, PLAYING = 1, BOSS = 2, RESULTS = 3, REVIVE = 4;
+let w = 0, h = 0, u = 1, dpr = 1;
+let state = MENU, paused = false;
+let player = null, enemies = [], food = [], rabbits = [], decor = [];
+let particles = [], particlesInWorld = true, floaters = [];
+let elapsed = 0, foodScore = 0, killScore = 0, kills = 0, maxMass = 0, hearts = 3;
+let spawnTimer = 0, preyTimer = 0, invuln = 0, dashTime = 0, dashCooldown = 0, shake = 0;
+let toast = null, toastTime = 0, banner = null, bannerTime = 0;
+let bossLevel = Math.max(1, store.get("bossLevel", 1)), bestScore = store.get("best", 0);
+let bossMaxHp = 0, bossHp = 0, clashRemaining = 0, clashStartMass = 0, bossDamage = 0, clashHeads = 1;
+let clashTimer = 0, clashInterval = 0, bossIntro = 0, bossOutro = 0, bossHit = 0, bossDefeated = false, runBossLevel = 1;
+let orbs = [];
+let survivalScore = 0, bossScore = 0, totalScore = 0, newBest = false;
+let camX = 0, camY = 0, zoom = 1;
+let joyId = null, joyActive = false, joyBaseX = 0, joyBaseY = 0, joyX = 0, joyY = 0, targetAngle = 0;
+const keys = new Set();
+let demoT = 0;
+const demo = new Wolf(PLAYER, 0, 0, 0, 10, PLAYER_PAL);
+
+for (let i = 0; i < 520; i++) decor.push({ x: rnd() * WORLD, y: rnd() * WORLD, k: rnd() < 0.7 ? 0 : (rnd() < 0.6 ? 1 : 2), s: 0.6 + rnd() * 0.9, t: rnd() * 6 });
+
+function resize() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const r = cv.getBoundingClientRect();
+  w = r.width; h = r.height; u = Math.min(w, h) / 720;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+}
+addEventListener("resize", resize);
+
+// ---------------- spawning ----------------
+const randFoodValue = () => rnd() < 0.1 ? 3 : 1;
+function spawnFood(x, y, v) {
+  if (food.length >= FOOD_MAX) return;
+  food.push({ x: clamp(x, 20, WORLD - 20), y: clamp(y, 20, WORLD - 20), v, rot: rnd() * Math.PI * 2 });
+}
+function spawnPointAround(minD, maxD) {
+  let px = 0, py = 0;
+  for (let k = 0; k < 20; k++) {
+    const a = rnd() * Math.PI * 2, d = minD + rnd() * (maxD - minD);
+    px = player.x + Math.cos(a) * d; py = player.y + Math.sin(a) * d;
+    if (px > 150 && py > 150 && px < WORLD - 150 && py < WORLD - 150) return [px, py];
+  }
+  return [clamp(px, 150, WORLD - 150), clamp(py, 150, WORLD - 150)];
+}
+function spawnHunter() {
+  const [x, y] = spawnPointAround(1000, 1400);
+  const mass = player.mass * (1.25 + rnd() * 0.5) + 8 + elapsed / 5;
+  const e = new Wolf(HUNTER, x, y, Math.atan2(player.y - y, player.x - x), mass, PALETTES[(rnd() * PALETTES.length) | 0]);
+  e.speed = 212 + Math.min(elapsed * 0.25, 30); e.turnRate = 2.4 + Math.min(elapsed * 0.004, 0.6);
+  e.maxLife = 24 + rnd() * 16;
+  enemies.push(e);
+}
+function spawnPreyWolf() {
+  const [x, y] = spawnPointAround(600, 1500);
+  const e = new Wolf(PREY, x, y, rnd() * Math.PI * 2, Math.max(4, player.mass * (0.3 + rnd() * 0.4)), PALETTES[(rnd() * PALETTES.length) | 0]);
+  e.heads = Math.min(e.heads, Math.max(1, player.heads - 1));
+  e.speed = 165 + rnd() * 30; e.turnRate = 3.2;
+  enemies.push(e);
+}
+function spawnRabbit() {
+  const [x, y] = spawnPointAround(400, 1600);
+  rabbits.push({ x, y, angle: rnd() * Math.PI * 2, t: rnd() * 3, hop: rnd() * 6, facing: 1, brown: rnd() < 0.5 });
+}
+const showToast = s => { toast = s; toastTime = 2.2; };
+
+function startGame() {
+  enemies = []; particles = []; food = []; rabbits = []; floaters = [];
+  const a = rnd() * Math.PI * 2;
+  player = new Wolf(PLAYER, WORLD / 2, WORLD / 2, a, START_MASS, PLAYER_PAL);
+  player.speed = PLAYER_SPEED; player.turnRate = 5.5;
+  targetAngle = a;
+  while (food.length < FOOD_BASE) spawnFood(rnd() * WORLD, rnd() * WORLD, randFoodValue());
+  for (let i = 0; i < 10; i++) spawnRabbit();
+  elapsed = 0; foodScore = killScore = kills = 0; maxMass = START_MASS; hearts = 3;
+  spawnTimer = 2.5; preyTimer = 0; invuln = 2.5; dashTime = dashCooldown = 0; shake = 0;
+  banner = null; bannerTime = 0;
+  revived = false; doubled = false; watchedRewardThisRun = false; reviveWaiting = false;
+  joyActive = false; joyId = null; paused = false; state = PLAYING;
+  camX = player.x; camY = player.y; zoom = u * 1.2;
+  for (let i = 0; i < 4; i++) spawnPreyWolf();
+  showToast("Eat meat, grow, and grow more heads!");
+}
+const maxHearts = () => 2 + player.heads;
+
+// ---------------- update ----------------
+function update(dt, now) {
+  net.tick(now);
+  if (toastTime > 0) toastTime -= dt;
+  if (bannerTime > 0) bannerTime -= dt;
+  updateParticles(dt);
+  if (state === MENU) { demoT += dt; demo.phase += dt * 11; demo.heads = 1 + (((demoT / 1.4) | 0) % 5); }
+  else if (state === PLAYING) { if (!net.online()) paused = true; if (!paused) updatePlaying(dt); }
+  else if (state === BOSS) { if (net.online()) updateBoss(dt); }
+  else if (state === REVIVE) { if (!reviveWaiting && net.online()) { reviveT -= dt; if (reviveT <= 0) knockOut(); } }
+}
+const steerBlend = (ang, away) => ang + normAngle(away - ang) * 0.7;
+
+function playerGrow(d) {
+  if (player.grow(d)) {
+    hearts = maxHearts();
+    banner = HEAD_NAMES[player.heads]; bannerTime = 2.4;
+    player.flash = 0.6; shake = 0.25;
+    burst(player.x, player.y, "#ffc247", 40, true);
+  }
+}
+
+function updatePlaying(dt) {
+  elapsed += dt;
+  if (invuln > 0) invuln -= dt;
+  if (shake > 0) shake -= dt;
+  if (dashCooldown > 0) dashCooldown -= dt;
+  let mul = 1 + 0.05 * (player.heads - 1);
+  if (dashTime > 0) { dashTime -= dt; mul *= 1.75; }
+
+  if (joyActive) {
+    const dx = joyX - joyBaseX, dy = joyY - joyBaseY;
+    if (dx * dx + dy * dy > (10 * u) ** 2) targetAngle = Math.atan2(dy, dx);
+  } else {
+    let kx = 0, ky = 0;
+    if (keys.has("ArrowLeft") || keys.has("a")) kx--; if (keys.has("ArrowRight") || keys.has("d")) kx++;
+    if (keys.has("ArrowUp") || keys.has("w")) ky--; if (keys.has("ArrowDown") || keys.has("s")) ky++;
+    if (kx || ky) targetAngle = Math.atan2(ky, kx);
+  }
+  player.move(dt, targetAngle, mul, WORLD);
+
+  // meat
+  const pr = player.r, magnet = pr + 50 + player.heads * 10, eatR = pr * 0.9 + 10;
+  for (let i = food.length - 1; i >= 0; i--) {
+    const f = food[i]; const dx = f.x - player.x, dy = f.y - player.y, d2 = dx * dx + dy * dy;
+    if (d2 < magnet * magnet) {
+      if (d2 < eatR * eatR) { foodScore += f.v * 2; food[i] = food[food.length - 1]; food.pop(); player.biteT = 0.15; playerGrow(f.v); }
+      else { const d = Math.sqrt(d2); f.x -= dx / d * 430 * dt; f.y -= dy / d * 430 * dt; }
+    }
+  }
+  while (food.length < FOOD_BASE) spawnFood(rnd() * WORLD, rnd() * WORLD, randFoodValue());
+
+  // rabbits hop around and flee
+  for (let i = rabbits.length - 1; i >= 0; i--) {
+    const b = rabbits[i];
+    const dx = b.x - player.x, dy = b.y - player.y, d = Math.hypot(dx, dy);
+    b.t -= dt;
+    if (d < 380) b.angle = Math.atan2(dy, dx) + (rnd() - 0.5) * 0.6;
+    else if (b.t <= 0) { b.t = 1 + rnd() * 2; b.angle = rnd() * Math.PI * 2; }
+    const sp = d < 380 ? 190 : 70;
+    b.hop += dt * (d < 380 ? 14 : 7);
+    b.x = clamp(b.x + Math.cos(b.angle) * sp * dt, 30, WORLD - 30); b.y = clamp(b.y + Math.sin(b.angle) * sp * dt, 30, WORLD - 30);
+    b.facing = Math.cos(b.angle) >= 0 ? 1 : -1;
+    if (d < pr + 16) {
+      rabbits.splice(i, 1); killScore += 15; player.biteT = 0.25;
+      burst(b.x, b.y, "#ffffff", 12, true); playerGrow(5); floater(b.x, b.y - 20, "+5", "#ffffff");
+    } else if (d > 2400) rabbits.splice(i, 1);
+  }
+  if (rabbits.length < 12 && rnd() < dt * 0.8) spawnRabbit();
+
+  // spawn wolves
+  let hunters = 0, prey = 0;
+  for (const e of enemies) e.type === HUNTER ? hunters++ : prey++;
+  const maxHunters = Math.min(2 + ((elapsed / 20) | 0), 8);
+  spawnTimer -= dt;
+  if (spawnTimer <= 0 && hunters < maxHunters) {
+    spawnHunter(); spawnTimer = Math.max(1.5, 4.5 - elapsed * 0.02);
+    if (hunters === 0) showToast("A bigger wolf picked up your scent!");
+  }
+  preyTimer -= dt;
+  if (preyTimer <= 0 && prey < 5) { spawnPreyWolf(); preyTimer = 3.5; }
+
+  // AI
+  const pp = player.power();
+  for (const e of enemies) {
+    e.life += dt;
+    const dxp = player.x - e.x, dyp = player.y - e.y, distP = Math.hypot(dxp, dyp);
+    const bigger = e.power() >= pp;
+    let ang, m = 1;
+    if (e.type === HUNTER && bigger && !e.leaving) {
+      if (e.life > e.maxLife) e.leaving = true;
+      const lead = Math.min(distP / Math.max(e.speed, 1), 1) * 0.6;
+      ang = Math.atan2(player.y + Math.sin(player.angle) * PLAYER_SPEED * lead - e.y, player.x + Math.cos(player.angle) * PLAYER_SPEED * lead - e.x);
+      if (distP > 900) m = 1.15;
+      if (distP < e.r + player.r + 60) e.biteT = 0.2;
+    } else if ((!bigger && distP < 520) || e.leaving) {
+      ang = Math.atan2(-dyp, -dxp); if (e.leaving) m = 0.9;
+    } else {
+      e.wanderTimer -= dt;
+      if (e.wanderTimer <= 0) { e.wanderTimer = 1 + rnd() * 2; e.wanderAngle = rnd() * Math.PI * 2; }
+      ang = e.wanderAngle;
+    }
+    const mg = 220;
+    if (e.x < mg) ang = steerBlend(ang, 0); else if (e.x > WORLD - mg) ang = steerBlend(ang, Math.PI);
+    if (e.y < mg) ang = steerBlend(ang, Math.PI / 2); else if (e.y > WORLD - mg) ang = steerBlend(ang, -Math.PI / 2);
+    e.move(dt, ang, m, WORLD);
+    if (e.type === PREY) {
+      const r2 = (e.r * 0.8 + 8) ** 2;
+      for (let f = food.length - 1; f >= 0; f--) {
+        const dx = food[f].x - e.x, dy = food[f].y - e.y;
+        if (dx * dx + dy * dy < r2) { if (rnd() < 0.5) e.grow(1); food[f] = food[food.length - 1]; food.pop(); }
+      }
+    }
+    if ((e.leaving && distP > 1700) || distP > 2600) e.alive = false;
+  }
+
+  // player vs wolves
+  for (const e of enemies) {
+    if (state !== PLAYING) break;
+    if (!e.alive) continue;
+    if (dist(player.x, player.y, e.x, e.y) < (player.r + e.r) * 0.72) {
+      if (player.power() > e.power()) eatWolf(e);
+      else if (invuln <= 0) bitten(e);
+    }
+  }
+  if (state !== PLAYING) return;
+  // hunters eat smaller wolves
+  for (const a of enemies) {
+    if (!a.alive || a.type !== HUNTER) continue;
+    for (const b of enemies) {
+      if (a === b || !b.alive || b.power() >= a.power()) continue;
+      if (dist(a.x, a.y, b.x, b.y) < (a.r + b.r) * 0.6) { a.grow(Math.min(b.mass / 3, Math.max(0, player.mass * 2.2 + 40 - a.mass))); a.biteT = 0.3; scatterMeat(b); }
+    }
+  }
+  enemies = enemies.filter(e => e.alive);
+  maxMass = Math.max(maxMass, player.mass);
+
+  const tz = u * 1.25 / (1 + Math.sqrt(player.mass) * 0.045);
+  zoom += (tz - zoom) * Math.min(1, dt * 2);
+  camX += (player.x - camX) * Math.min(1, dt * 6);
+  camY += (player.y - camY) * Math.min(1, dt * 6);
+}
+
+function floater(x, y, s, c) { floaters.push({ x, y, s, c, t: 1 }); }
+function eatWolf(e) {
+  const gain = Math.round(e.mass / 2) + 2;
+  killScore += Math.round(e.mass) * 5; kills++;
+  player.biteT = 0.35; player.flash = 0.3;
+  burst(e.x, e.y, e.pal.c1, 26, true); scatterMeat(e);
+  floater(e.x, e.y - e.r, "+" + gain, "#69F0AE");
+  showToast("Wolf devoured!");
+  playerGrow(gain);
+}
+function scatterMeat(e) {
+  e.alive = false;
+  const n = Math.min(14, 3 + Math.round(e.mass / 8));
+  for (let i = 0; i < n; i++) { const a = rnd() * Math.PI * 2, d = rnd() * e.r * 1.5; spawnFood(e.x + Math.cos(a) * d, e.y + Math.sin(a) * d, 2); }
+}
+function bitten(e) {
+  hearts--;
+  const lost = Math.max(2, Math.round(player.mass * 0.15));
+  player.mass = Math.max(4, player.mass - lost);
+  e.grow(Math.min(lost / 2, Math.max(0, player.mass * 2.2 + 40 - e.mass))); e.biteT = 0.4;
+  const a = Math.atan2(player.y - e.y, player.x - e.x);
+  player.kx = Math.cos(a) * 700; player.ky = Math.sin(a) * 700;
+  invuln = 1.6; shake = 0.35; player.flash = 1.4;
+  burst(player.x, player.y, "#ff3b3b", 20, true);
+  floater(player.x, player.y - player.r, "-" + lost, "#ff6b6b");
+  if (hearts <= 0) playerDown();
+  else showToast("Bitten! " + hearts + (hearts === 1 ? " heart" : " hearts") + " left");
+}
+function playerDown() {
+  if (!revived && rewardedReady()) {
+    state = REVIVE; reviveT = 6; reviveWaiting = false;
+    joyActive = false; joyId = null;
+  } else knockOut();
+}
+function doRevive() {
+  revived = true; watchedRewardThisRun = true;
+  hearts = maxHearts(); invuln = 3; shake = 0;
+  for (const e of enemies) if (e.power() >= player.power() && dist(e.x, e.y, player.x, player.y) < 900) e.leaving = true;
+  burst(player.x, player.y, "#40e0ff", 40, true);
+  banner = "REVIVED!"; bannerTime = 2.2;
+  paused = false; state = PLAYING;
+}
+window.onAdReward = (tag, ok) => {
+  adBusy = false;
+  if (tag === "revive" && state === REVIVE) { if (ok) doRevive(); else knockOut(); }
+  else if (tag === "double" && state === RESULTS && ok && !doubled) {
+    doubled = true; watchedRewardThisRun = true;
+    bossScore *= 2; totalScore = survivalScore + bossScore;
+    if (totalScore > bestScore) { bestScore = totalScore; newBest = true; store.set("best", bestScore); }
+    burst(w / 2, h * 0.5, "#FFD740", 50, false);
+  }
+};
+window.onAdClosed = () => { adBusy = false; const a = pendingAfterAd; pendingAfterAd = null; if (a) a(); };
+function afterRun(action) {
+  if (ads && !watchedRewardThisRun && runsSinceInterstitial >= INTERSTITIAL_EVERY && adCall("interstitialReady")) {
+    runsSinceInterstitial = 0; store.set("runsSinceAd", 0);
+    adBusy = true; pendingAfterAd = action;
+    adCall("showInterstitial");
+    setTimeout(() => { if (adBusy && pendingAfterAd === action) window.onAdClosed(); }, 90000);
+  } else action();
+}
+function knockOut() {
+  shake = 0.5; burst(player.x, player.y, player.pal.c1, 40, true);
+  survivalScore = ((elapsed * 5) | 0) + foodScore + killScore;
+  clashStartMass = clashRemaining = Math.round(player.mass);
+  clashHeads = player.heads;
+  runBossLevel = bossLevel;
+  bossMaxHp = bossHp = 80 * bossLevel + 20 * bossLevel * bossLevel;
+  bossDamage = 0; clashTimer = 0; clashInterval = 0.09; orbs = [];
+  bossIntro = 2.4; bossOutro = 0; bossDefeated = false;
+  joyActive = false; joyId = null; particles = []; floaters = [];
+  state = BOSS;
+}
+function updateBoss(dt) {
+  demoT += dt;
+  if (bossHit > 0) bossHit -= dt;
+  for (let i = orbs.length - 1; i >= 0; i--) {
+    const o = orbs[i]; o.t += dt * 2.6;
+    if (o.t >= 1) {
+      orbs.splice(i, 1);
+      bossHp = Math.max(0, bossHp - o.dmg); bossHit = 0.08;
+      burst(bx() + (rnd() - 0.5) * 60 * u, by() + (rnd() - 0.5) * 60 * u, "#ffc247", 4, false);
+      floaters.push({ x: bx() + (rnd() - 0.5) * 120 * u, y: by() - 80 * u, s: "-" + o.dmg, c: "#ffc247", t: 0.8, screen: true });
+    }
+  }
+  floaters.forEach(f => { f.t -= dt; f.y -= 50 * u * dt; }); floaters = floaters.filter(f => f.t > 0);
+  if (bossIntro > 0) { bossIntro -= dt; return; }
+  if (bossOutro > 0) { bossOutro -= dt; if (bossOutro <= 0) finishRun(); return; }
+  clashTimer -= dt;
+  const pending = orbs.reduce((s, o) => s + o.dmg, 0);
+  while (clashTimer <= 0 && clashRemaining > 0 && bossHp - pending - bossDamageQueued() > 0) {
+    clashRemaining--; bossDamage += clashHeads;
+    orbs.push({ t: 0, dmg: clashHeads, wob: rnd() * 2 - 1 });
+    clashInterval = Math.max(0.02, clashInterval * 0.965); clashTimer += clashInterval;
+  }
+  if (orbs.length === 0 && (clashRemaining <= 0 || bossHp <= 0)) {
+    bossDefeated = bossHp <= 0;
+    if (bossDefeated) burst(bx(), by(), "#FFD740", 60, false);
+    bossOutro = 2.0;
+  }
+}
+const bossDamageQueued = () => 0;
+const bossR = () => Math.min(120 * u, w * 0.17);
+const playerR = () => Math.min(60 * u + Math.sqrt(clashStartMass) * 2 * u, 110 * u, w * 0.16);
+const bx = () => Math.min(w * 0.66, w - 2.2 * bossR()), by = () => h * 0.30;
+const px0 = () => Math.max(w * 0.28, 2.25 * playerR()), py0 = () => h * 0.66;
+function finishRun() {
+  bossDamage = Math.min(bossDamage, bossMaxHp);
+  bossScore = bossDamage * 10 * runBossLevel + (bossDefeated ? 250 * runBossLevel : 0);
+  totalScore = survivalScore + bossScore;
+  newBest = totalScore > bestScore;
+  if (newBest) { bestScore = totalScore; store.set("best", bestScore); }
+  if (bossDefeated) { bossLevel++; store.set("bossLevel", bossLevel); }
+  runsSinceInterstitial++; store.set("runsSinceAd", runsSinceInterstitial);
+  state = RESULTS;
+}
+
+// ---------------- particles ----------------
+function burst(x, y, color, n, world) {
+  particlesInWorld = world;
+  for (let i = 0; i < n && particles.length < 400; i++) {
+    const a = rnd() * Math.PI * 2, sp = (80 + rnd() * 260) * (world ? 1 : u);
+    particles.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0.5 + rnd() * 0.5, size: (4 + rnd() * 6) * (world ? 1 : u), c: color });
+  }
+}
+function updateParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i]; p.life -= dt;
+    if (p.life <= 0) { particles[i] = particles[particles.length - 1]; particles.pop(); continue; }
+    p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.95; p.vy *= 0.95;
+  }
+  if (state === PLAYING) { floaters.forEach(f => { f.t -= dt; f.y -= 60 * dt; }); floaters = floaters.filter(f => f.t > 0); }
+}
+
+// ---------------- buttons ----------------
+const btn = (cy, bw) => ({ l: w / 2 - bw * u / 2, t: cy - 44 * u, r: w / 2 + bw * u / 2, b: cy + 44 * u });
+const playBtn = () => btn(h * 0.70, 380), retryBtn = () => btn(h * 0.64, 320);
+const againBtn = () => btn(h * 0.80, 380), menuBtn = () => btn(h * 0.80 + 110 * u, 380);
+const doubleBtn = () => btn(h * 0.70, 440);
+const reviveBtn = () => btn(h * 0.56, 460), noThanksBtn = () => btn(h * 0.56 + 110 * u, 300);
+const privacyBtn = () => ({ l: w - 230 * u, t: h - 70 * u, r: w - 10 * u, b: h - 10 * u });
+const showDouble = () => ads && !doubled && bossScore > 0 && rewardedReady();
+const resumeBtn = () => btn(h * 0.5, 360), pauseMenuBtn = () => btn(h * 0.5 + 110 * u, 360);
+const hit = (r, x, y) => x >= r.l && x <= r.r && y >= r.t && y <= r.b;
+const dashX = () => w - 110 * u, dashY = () => h - 140 * u;
+function tryDash() { if (dashCooldown <= 0) { dashTime = 1; dashCooldown = 5; } }
+
+// ---------------- input ----------------
+function onPointerDown(id, x, y) {
+  if (net.state !== NET.ONLINE && state !== RESULTS) { if (net.state === NET.OFFLINE && hit(retryBtn(), x, y)) net.check(); return; }
+  if (adBusy) return;
+  if (state === MENU) {
+    if (hit(playBtn(), x, y)) startGame();
+    else if (ads && adCall("privacyRequired") && hit(privacyBtn(), x, y)) adCall("showPrivacy");
+    return;
+  }
+  if (state === RESULTS) {
+    if (showDouble() && hit(doubleBtn(), x, y)) { adBusy = true; adCall("showRewarded", "double"); }
+    else if (hit(againBtn(), x, y)) afterRun(startGame);
+    else if (hit(menuBtn(), x, y)) afterRun(() => { state = MENU; });
+    return;
+  }
+  if (state === REVIVE) {
+    if (reviveWaiting) return;
+    if (hit(reviveBtn(), x, y)) { reviveWaiting = true; adBusy = true; adCall("showRewarded", "revive"); }
+    else if (hit(noThanksBtn(), x, y)) knockOut();
+    return;
+  }
+  if (state === BOSS) { if (bossIntro > 0.3) bossIntro = 0.3; return; }
+  if (state === PLAYING) {
+    if (paused) {
+      if (hit(resumeBtn(), x, y)) paused = false;
+      else if (hit(pauseMenuBtn(), x, y)) { paused = false; state = MENU; }
+      return;
+    }
+    if (dist(x, y, w - 46 * u, 46 * u) < 44 * u) { paused = true; return; }
+    if (dist(x, y, dashX(), dashY()) < 80 * u) { tryDash(); return; }
+    if (joyId === null) { joyId = id; joyActive = true; joyBaseX = joyX = x; joyBaseY = joyY = y; }
+  }
+}
+const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+cv.addEventListener("pointerdown", e => {
+  cv.focus(); const [x, y] = pos(e);
+  onPointerDown(e.pointerId, x, y);
+  if (joyId === e.pointerId) try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+  e.preventDefault();
+});
+cv.addEventListener("pointermove", e => {
+  if (e.pointerId !== joyId) return;
+  [joyX, joyY] = pos(e);
+  const dx = joyX - joyBaseX, dy = joyY - joyBaseY, d = Math.hypot(dx, dy), max = 90 * u;
+  if (d > max) { joyBaseX = joyX - dx / d * max; joyBaseY = joyY - dy / d * max; }
+});
+const endPtr = e => { if (e.pointerId === joyId) { joyId = null; joyActive = false; } };
+cv.addEventListener("pointerup", endPtr); cv.addEventListener("pointercancel", endPtr);
+addEventListener("keydown", e => {
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "].includes(k)) e.preventDefault();
+  keys.add(k);
+  if (k === " " && state === PLAYING && !paused) tryDash();
+  if (k === "Enter") {
+    if (adBusy) return;
+    if (state === MENU) { if (net.online()) startGame(); }
+    else if (state === RESULTS) { if (net.online()) afterRun(startGame); }
+    else if (state === PLAYING && paused && net.online()) paused = false;
+    else if (state === BOSS && bossIntro > 0.3) bossIntro = 0.3;
+  }
+  if ((k === "Escape" || k === "p") && state === PLAYING) paused = !paused;
+});
+addEventListener("keyup", e => keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key));
+addEventListener("blur", () => { keys.clear(); if (state === PLAYING) paused = true; });
+document.addEventListener("visibilitychange", () => { if (document.hidden && state === PLAYING) paused = true; });
+
+// Hooks used by the Android app (back button / app pause)
+window.onAndroidBack = () => {
+  if (state === PLAYING) { if (!paused) paused = true; else { paused = false; state = MENU; } return true; }
+  if (state === REVIVE) { if (!reviveWaiting) knockOut(); return true; }
+  if (state === RESULTS || state === BOSS) { if (!adBusy) state = MENU; return true; }
+  return false;
+};
+window.onAndroidPause = () => { if (state === PLAYING) paused = true; };
+
+// ---------------- drawing helpers ----------------
+function circle(x, y, r, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+function ellipse(x, y, rx, ry, c, rot = 0) { ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); ctx.fill(); }
+function poly(pts, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) ctx.lineTo(pts[i], pts[i + 1]); ctx.closePath(); ctx.fill(); }
+function rrect(l, t, r, b, rad, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.roundRect(l, t, r - l, b - t, rad); ctx.fill(); }
+function text(s, x, y, size, color, align = "center", font = DISPLAY) {
+  ctx.font = `${size}px ${font}`; ctx.textAlign = align; ctx.fillStyle = color; ctx.fillText(s, x, y);
+}
+function line(x1, y1, x2, y2, c, wd) { ctx.strokeStyle = c; ctx.lineWidth = wd; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+function button(r, label, color) {
+  rrect(r.l, r.t + 8 * u, r.r, r.b + 8 * u, 44 * u, "rgba(0,0,0,0.35)");
+  rrect(r.l, r.t, r.r, r.b, 44 * u, color);
+  let fs = 38 * u; ctx.font = `${fs}px ${DISPLAY}`;
+  const tw = ctx.measureText(label).width, room = r.r - r.l - 40 * u;
+  if (tw > room) fs *= room / tw;
+  text(label, (r.l + r.r) / 2, (r.t + r.b) / 2 + fs * 0.37, fs, "#fff");
+}
+
+// ---------------- the wolf ----------------
+// Side view, facing right in local space (flipped by `facing`). r = body radius.
+function drawWolf(x, y, r, wf, opts = {}) {
+  const pal = wf.pal, n = wf.heads, ph = wf.phase, angry = !!opts.angry, glow = opts.glow;
+  ellipse(x, y + r * 0.92, r * 1.35, r * 0.26, "rgba(0,0,0,0.35)");
+  if (glow) { ctx.strokeStyle = glow; ctx.lineWidth = r * 0.08; ctx.beginPath(); ctx.ellipse(x, y + r * 0.92, r * 1.45, r * 0.32, 0, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.save();
+  const bob = -Math.abs(Math.sin(ph)) * r * 0.07;
+  ctx.translate(x, y + bob);
+  let f = wf.facing; if (Math.abs(f) < 0.18) f = f < 0 ? -0.18 : 0.18;
+  ctx.scale(f, 1);
+  if (wf.flash > 0 && ((wf.flash * 18) | 0) % 2 === 0) ctx.globalAlpha = 0.45;
+  ctx.lineCap = "round";
+  const leg = (lx, sw, col, paw) => {
+    const ex = lx + sw * r * 0.42, ey = r * 0.86 - Math.max(0, -Math.cos(ph)) * 0;
+    line(lx, r * 0.1, (lx + ex) / 2 + sw * r * 0.05, r * 0.5, col, r * 0.26);
+    line((lx + ex) / 2 + sw * r * 0.05, r * 0.5, ex, ey, col, r * 0.22);
+    ellipse(ex + r * 0.06, ey, r * 0.15, r * 0.09, paw);
+  };
+  // far legs
+  leg(-0.62 * r, Math.sin(ph + Math.PI), pal.c2, pal.c2);
+  leg(0.58 * r, Math.sin(ph), pal.c2, pal.c2);
+  // tail
+  const sway = Math.sin(ph * 0.5) * r * 0.18;
+  ctx.strokeStyle = pal.c1; ctx.lineWidth = r * 0.34; ctx.beginPath();
+  ctx.moveTo(-0.95 * r, -0.15 * r); ctx.quadraticCurveTo(-1.55 * r, -0.15 * r + sway, -1.9 * r, -0.55 * r + sway * 0.6); ctx.stroke();
+  circle(-1.9 * r, -0.55 * r + sway * 0.6, r * 0.19, pal.c3);
+  // body
+  ellipse(0, 0, r * 1.12, r * 0.54, pal.c1);
+  ellipse(-0.1 * r, -0.3 * r, r * 0.85, r * 0.2, pal.c2);
+  ellipse(0.08 * r, 0.24 * r, r * 0.74, r * 0.24, pal.c3);
+  // near legs
+  leg(-0.5 * r, Math.sin(ph), pal.c1, pal.c3);
+  leg(0.72 * r, Math.sin(ph + Math.PI), pal.c1, pal.c3);
+  // necks + heads
+  const hs = 1 - (n - 1) * 0.05, hr = r * hs;
+  const baseX = 0.78 * r, baseY = -0.22 * r, L = 0.62 * r + (n - 1) * 0.14 * r;
+  const heads = [];
+  for (let i = 0; i < n; i++) {
+    const spread = 0.55 + n * 0.3, a = n === 1 ? -0.38 : -0.38 - spread / 2 + (spread * i) / (n - 1);
+    const wob = Math.sin(ph * 0.5 + i * 1.7) * 0.06;
+    heads.push([baseX + Math.cos(a + wob) * L, baseY + Math.sin(a + wob) * L, a + wob]);
+  }
+  circle(baseX, baseY, r * 0.42, pal.c1);
+  for (const [hx, hy] of heads) line(baseX, baseY, hx, hy, pal.c1, hr * 0.4);
+  const open = wf.biteT > 0 ? Math.min(1, wf.biteT * 6) : 0;
+  for (const [hx, hy, a] of heads) {
+    ctx.save(); ctx.translate(hx, hy); ctx.rotate(a * 0.35); ctx.scale(hr, hr);
+    // ears
+    poly([-0.32, -0.18, -0.26, -0.62, -0.06, -0.24], pal.c2);
+    poly([-0.08, -0.22, 0.02, -0.66, 0.18, -0.2], pal.c2);
+    poly([-0.04, -0.24, 0.02, -0.5, 0.1, -0.24], pal.c3);
+    // lower jaw
+    if (open > 0) {
+      poly([0.12, 0.1, 0.66, 0.1 + open * 0.28, 0.62, 0.2 + open * 0.3, 0.1, 0.24], pal.c3);
+      poly([0.18, 0.08, 0.62, 0.06 + open * 0.24, 0.6, 0.12 + open * 0.24, 0.18, 0.14], "#5a0d14");
+      poly([0.3, 0.1 + open * 0.1, 0.34, 0.18 + open * 0.12, 0.38, 0.1 + open * 0.12], "#fff");
+      poly([0.48, 0.12 + open * 0.17, 0.52, 0.2 + open * 0.18, 0.56, 0.12 + open * 0.18], "#fff");
+    }
+    // skull + snout
+    ellipse(0, 0, 0.4, 0.32, pal.c1);
+    poly([0.12, -0.16, 0.74, -0.03, 0.75, 0.09, 0.14, 0.18], pal.c1);
+    poly([0.2, 0.06, 0.74, 0.06, 0.73, 0.11, 0.2, 0.18], pal.c3);
+    if (open > 0) { poly([0.36, 0.09, 0.4, 0.17, 0.44, 0.09], "#fff"); poly([0.6, 0.09, 0.63, 0.16, 0.66, 0.09], "#fff"); }
+    circle(0.74, 0.02, 0.08, "#151515");
+    // eye
+    circle(0.14, -0.08, 0.09, pal.eye); circle(0.17, -0.08, 0.045, "#111");
+    if (angry) line(0.02, -0.22, 0.27, -0.13, "#111", 0.07);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+function drawRabbit(b) {
+  const bounce = -Math.abs(Math.sin(b.hop)) * 10;
+  ellipse(b.x, b.y + 12, 16, 5, "rgba(0,0,0,0.3)");
+  ctx.save(); ctx.translate(b.x, b.y + bounce); ctx.scale(b.facing, 1);
+  const c = b.brown ? "#b08b62" : "#eeeae4", c2 = b.brown ? "#8a6a48" : "#cfc9c0";
+  ellipse(-2, 0, 14, 10, c); circle(-15, -2, 5, "#fff");
+  circle(10, -6, 8, c);
+  ellipse(8, -19, 3, 10, c2, -0.2); ellipse(13, -18, 3, 10, c, 0.15);
+  circle(14, -7, 1.8, "#111"); circle(18, -4, 1.5, "#e88");
+  ctx.restore();
+}
+function drawMeat(f) {
+  const big = f.v >= 3, s = big ? 1.5 : f.v === 2 ? 1.15 : 1;
+  ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.scale(s, s);
+  if (big) { ctx.globalAlpha = 0.25; circle(0, 0, 18, "#ffc247"); ctx.globalAlpha = 1; }
+  line(2, 0, 14, 0, "#f3ead8", 4); circle(15, -2.5, 3, "#f3ead8"); circle(15, 2.5, 3, "#f3ead8");
+  ellipse(-3, 0, 9, 7, "#b3412f"); ellipse(-5, -2, 4, 2.5, "#d86a4f");
+  ctx.restore();
+}
+
+// ---------------- draw ----------------
+function draw() {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.lineCap = "round";
+  ctx.fillStyle = "#0B1410"; ctx.fillRect(0, 0, w, h);
+  if (state === MENU) drawMenu();
+  else if (state === PLAYING) { drawWorld(); drawHud(); if (paused && net.online()) drawPause(); }
+  else if (state === BOSS) drawBoss();
+  else if (state === REVIVE) { drawWorld(); drawHud(); drawRevive(); }
+  else drawResults();
+  if (state === PLAYING && !paused) {
+    if (bannerTime > 0 && banner) {
+      const k = Math.min(1, bannerTime * 2), sc = 1 + Math.max(0, bannerTime - 2) * 1.5;
+      ctx.globalAlpha = k;
+      text(banner, w / 2, h * 0.32, 64 * u * sc, "#ffc247");
+      text("Stronger bite · more hearts", w / 2, h * 0.32 + 44 * u, 24 * u, "#fff", "center", BODY);
+      ctx.globalAlpha = 1;
+    } else if (toastTime > 0 && toast) {
+      ctx.globalAlpha = Math.min(1, toastTime);
+      text(toast, w / 2, h * 0.2, 26 * u, "#fff", "center", BODY);
+      ctx.globalAlpha = 1;
+    }
+  }
+  if (net.state !== NET.ONLINE && state !== RESULTS) drawOffline();
+}
+
+function drawWorld() {
+  ctx.save();
+  const sx = shake > 0 ? (rnd() - 0.5) * 16 * u : 0, sy = shake > 0 ? (rnd() - 0.5) * 16 * u : 0;
+  ctx.translate(w / 2 + sx, h / 2 + sy); ctx.scale(zoom, zoom); ctx.translate(-camX, -camY);
+  const hw = w / 2 / zoom + 120, hh = h / 2 / zoom + 120;
+  const l = camX - hw, r = camX + hw, t = camY - hh, b = camY + hh;
+  ctx.fillStyle = "#172A1F"; ctx.fillRect(0, 0, WORLD, WORLD);
+  ctx.strokeStyle = "#1C3326"; ctx.lineWidth = 2; ctx.beginPath();
+  const g = 160;
+  for (let gx = Math.max(0, Math.floor(l / g) * g); gx <= Math.min(WORLD, r); gx += g) { ctx.moveTo(gx, Math.max(0, t)); ctx.lineTo(gx, Math.min(WORLD, b)); }
+  for (let gy = Math.max(0, Math.floor(t / g) * g); gy <= Math.min(WORLD, b); gy += g) { ctx.moveTo(Math.max(0, l), gy); ctx.lineTo(Math.min(WORLD, r), gy); }
+  ctx.stroke();
+  for (const d of decor) {
+    if (d.x < l || d.x > r || d.y < t || d.y > b) continue;
+    if (d.k === 0) { for (let i = -1; i <= 1; i++) line(d.x + i * 5 * d.s, d.y, d.x + i * 9 * d.s, d.y - 14 * d.s, "#23412f", 3); }
+    else if (d.k === 1) { ellipse(d.x, d.y, 22 * d.s, 14 * d.s, "#24352e"); ellipse(d.x - 5 * d.s, d.y - 4 * d.s, 10 * d.s, 5 * d.s, "#2f453b"); }
+    else { circle(d.x, d.y, 26 * d.s, "#1f3b2a"); circle(d.x + 14 * d.s, d.y - 8 * d.s, 18 * d.s, "#25472f"); circle(d.x - 6 * d.s, d.y - 12 * d.s, 14 * d.s, "#2b5236"); }
+  }
+  ctx.strokeStyle = "#5a3a22"; ctx.lineWidth = 26; ctx.strokeRect(0, 0, WORLD, WORLD);
+  ctx.strokeStyle = "#7a5233"; ctx.lineWidth = 8; ctx.strokeRect(0, 0, WORLD, WORLD);
+
+  for (const f of food) if (f.x > l && f.x < r && f.y > t && f.y < b) drawMeat(f);
+  for (const bb of rabbits) if (bb.x > l && bb.x < r && bb.y > t && bb.y < b) drawRabbit(bb);
+  // draw wolves sorted by y for depth
+  const pp = player.power();
+  const all = enemies.concat(invuln <= 0 || ((elapsed * 10) | 0) % 2 === 0 ? [player] : []).sort((a, b2) => a.y - b2.y);
+  for (const e of all) {
+    if (e.x < l - e.r * 3 || e.x > r + e.r * 3 || e.y < t - e.r * 3 || e.y > b + e.r * 3) continue;
+    drawWolf(e.x, e.y, e.r, e, { angry: e !== player && e.power() >= pp, glow: e === player ? "rgba(64,224,255,0.8)" : null });
+  }
+  for (const e of enemies) drawLabel(e, pp);
+  drawLabel(player, pp);
+  if (particlesInWorld) drawParticles();
+  for (const f of floaters) { ctx.globalAlpha = Math.min(1, f.t * 1.5); text(f.s, f.x, f.y, 30, f.c); }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+  drawIndicators(pp);
+}
+function drawLabel(s, pp) {
+  const str = String(s.power()), ts = 22 + s.r * 0.3;
+  ctx.font = `${ts}px ${DISPLAY}`;
+  const tw = ctx.measureText(str).width;
+  const lx = s.x, ly = s.y - s.r * (1.45 + s.heads * 0.12) - ts * 0.2;
+  const bg = s === player ? "rgba(41,121,255,0.9)" : s.power() >= pp ? "rgba(213,0,0,0.88)" : "rgba(46,125,50,0.88)";
+  rrect(lx - tw / 2 - ts * 0.4, ly - ts * 0.95, lx + tw / 2 + ts * 0.4, ly + ts * 0.3, ts * 0.5, bg);
+  text(str, lx, ly, ts, "#fff");
+}
+function drawParticles() {
+  for (const p of particles) { ctx.globalAlpha = Math.min(1, p.life * 1.5); circle(p.x, p.y, p.size, p.c); }
+  ctx.globalAlpha = 1;
+}
+function drawIndicators(pp) {
+  const hw = w / 2 / zoom, hh = h / 2 / zoom;
+  for (const e of enemies) {
+    if (e.power() < pp || e.leaving) continue;
+    const dx = e.x - camX, dy = e.y - camY;
+    if (Math.abs(dx) < hw && Math.abs(dy) < hh) continue;
+    const d = Math.hypot(dx, dy); if (d > 2200) continue;
+    const a = Math.atan2(dy, dx);
+    const ex = clamp(w / 2 + Math.cos(a) * (w / 2 - 40 * u), 40 * u, w - 40 * u);
+    const ey = clamp(h / 2 + Math.sin(a) * (h / 2 - 40 * u), 150 * u, h - 40 * u);
+    const s = 22 * u;
+    ctx.globalAlpha = d < 900 ? 1 : 0.6;
+    poly([ex + Math.cos(a) * s, ey + Math.sin(a) * s, ex + Math.cos(a + 2.4) * s, ey + Math.sin(a + 2.4) * s, ex + Math.cos(a - 2.4) * s, ey + Math.sin(a - 2.4) * s], "#FF3B3B");
+    ctx.globalAlpha = 1;
+  }
+}
+function heart(x, y, s, full) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  ctx.fillStyle = full ? "#ff4d5e" : "rgba(255,255,255,0.18)";
+  ctx.beginPath(); ctx.moveTo(0, 0.35); ctx.bezierCurveTo(-0.9, -0.3, -0.45, -0.95, 0, -0.45); ctx.bezierCurveTo(0.45, -0.95, 0.9, -0.3, 0, 0.35); ctx.fill();
+  ctx.restore();
+}
+function drawHud() {
+  ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(0, 0, w, 132 * u);
+  text("POWER", 24 * u, 32 * u, 18 * u, "rgba(255,255,255,0.8)", "left", BODY);
+  text(String(player.power()), 24 * u, 72 * u, 34 * u, "#82b1ff", "left");
+  text("TIME", w / 2, 32 * u, 18 * u, "rgba(255,255,255,0.8)", "center", BODY);
+  const sec = elapsed | 0;
+  text(`${(sec / 60) | 0}:${String(sec % 60).padStart(2, "0")}`, w / 2, 70 * u, 30 * u, "#fff");
+  text("SCORE", w - 100 * u, 32 * u, 18 * u, "rgba(255,255,255,0.8)", "right", BODY);
+  text(String(((elapsed * 5) | 0) + foodScore + killScore), w - 100 * u, 70 * u, 30 * u, "#FFD740", "right");
+  circle(w - 46 * u, 46 * u, 32 * u, "rgba(255,255,255,0.33)");
+  ctx.fillStyle = "#fff"; ctx.fillRect(w - 56 * u, 32 * u, 6 * u, 28 * u); ctx.fillRect(w - 42 * u, 32 * u, 6 * u, 28 * u);
+  // hearts
+  for (let i = 0; i < maxHearts(); i++) heart(36 * u + i * 34 * u, 104 * u, 26 * u, i < hearts);
+  // heads progress
+  const hx = w / 2 + 20 * u;
+  text("HEADS", hx, 112 * u, 18 * u, "rgba(255,255,255,0.8)", "left", BODY);
+  for (let i = 0; i < 5; i++) circle(hx + 86 * u + i * 26 * u, 105 * u, 9 * u, i < player.heads ? "#ffc247" : "rgba(255,255,255,0.18)");
+  if (player.heads < 5) {
+    const lo = HEAD_AT[player.heads - 1], hi = HEAD_AT[player.heads];
+    const k = clamp((player.mass - lo) / (hi - lo), 0, 1);
+    const bx0 = hx + 76 * u, bw = 128 * u;
+    rrect(bx0, 120 * u, bx0 + bw, 126 * u, 3 * u, "rgba(255,255,255,0.15)");
+    rrect(bx0, 120 * u, bx0 + bw * k, 126 * u, 3 * u, "#ffc247");
+  }
+
+  if (joyActive) {
+    ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 4 * u; ctx.beginPath(); ctx.arc(joyBaseX, joyBaseY, 90 * u, 0, Math.PI * 2); ctx.stroke();
+    circle(joyX, joyY, 36 * u, "rgba(255,255,255,0.53)");
+  } else if (elapsed < 6) {
+    text(TOUCH ? "Touch and drag anywhere to run" : "Drag anywhere to run · arrows/WASD · Space = dash", w / 2, h - 30 * u, 22 * u, "rgba(255,255,255,0.8)", "center", BODY);
+  }
+  const dx = dashX(), dy = dashY(), ready = dashCooldown <= 0;
+  circle(dx, dy, 66 * u, ready ? "rgba(255,194,71,0.9)" : "rgba(136,136,136,0.4)");
+  if (!ready) {
+    ctx.strokeStyle = "#FFC247"; ctx.lineWidth = 8 * u; ctx.beginPath();
+    ctx.arc(dx, dy, 66 * u, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - dashCooldown / 5)); ctx.stroke();
+  }
+  text("DASH", dx, dy + 9 * u, 24 * u, "#1A1A1A");
+
+  const ms = 150 * u, mx = 20 * u, my = h - ms - 60 * u, k = ms / WORLD, pp = player.power();
+  ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.fillRect(mx, my, ms, ms);
+  ctx.strokeStyle = "rgba(255,255,255,0.55)"; ctx.lineWidth = 2 * u; ctx.strokeRect(mx, my, ms, ms);
+  for (const e of enemies) circle(mx + e.x * k, my + e.y * k, 4 * u, e.power() >= pp ? "#FF3B3B" : "#69F0AE");
+  circle(mx + player.x * k, my + player.y * k, 5 * u, "#40e0ff");
+}
+
+function drawMoon(x, y, r) {
+  ctx.globalAlpha = 0.12; circle(x, y, r * 1.8, "#e8f0ff"); ctx.globalAlpha = 1;
+  circle(x, y, r, "#e8eefa"); circle(x - r * 0.3, y - r * 0.2, r * 0.18, "#cdd6e8"); circle(x + r * 0.25, y + r * 0.3, r * 0.12, "#cdd6e8");
+}
+function drawMenu() {
+  drawMoon(w - 70 * u, 70 * u, 36 * u);
+  ctx.fillStyle = "#13251b";
+  ctx.beginPath(); ctx.moveTo(0, h * 0.62);
+  for (let x = 0; x <= w; x += 40 * u) ctx.lineTo(x, h * 0.62 - Math.abs(Math.sin(x * 0.013 / u)) * 70 * u - 20 * u);
+  ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.fill();
+  ctx.fillStyle = "#172a1f"; ctx.fillRect(0, h * 0.6, w, h * 0.4);
+
+  text("WOLF CLASH", w / 2, h * 0.17, 74 * u, "#82b1ff");
+  text("ARENA", w / 2, h * 0.17 + 84 * u, 70 * u, "#FFC247");
+  text("Eat. Grow. Sprout up to five heads.", w / 2, h * 0.17 + 134 * u, 26 * u, "rgba(255,255,255,0.85)", "center", BODY);
+
+  demo.facing = 1;
+  const dr = 70 * u;
+  drawWolf(w / 2 - 10 * u, h * 0.48, dr, demo, { glow: "rgba(64,224,255,0.8)" });
+  text(HEAD_NAMES[demo.heads].replace("!", ""), w / 2, h * 0.48 + dr * 1.55, 26 * u, "#ffc247");
+
+  button(playBtn(), "PLAY", "#2979FF");
+  text("BEST SCORE  " + bestScore, w / 2, h * 0.70 + 104 * u, 28 * u, "#fff", "center", BODY);
+  text("ALPHA BOSS LEVEL  " + bossLevel, w / 2, h * 0.70 + 148 * u, 28 * u, "#FF8A80", "center", BODY);
+  const on = net.online();
+  circle(w / 2 - 60 * u, h - 40 * u, 9 * u, on ? "#00E676" : "#FF3B3B");
+  text(on ? "Online" : "Offline", w / 2 - 40 * u, h - 32 * u, 24 * u, "rgba(255,255,255,0.7)", "left", BODY);
+  if (ads && adCall("privacyRequired")) { const r = privacyBtn(); text("Privacy options", r.r - 6 * u, r.b - 22 * u, 22 * u, "rgba(255,255,255,0.75)", "right", BODY); }
+}
+function drawPause() {
+  ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, w, h);
+  text("PAUSED", w / 2, h * 0.36, 76 * u, "#fff");
+  button(resumeBtn(), "RESUME", "#2979FF"); button(pauseMenuBtn(), "MENU", "#455A64");
+}
+function drawBoss() {
+  drawMoon(w * 0.14, h * 0.2, 32 * u);
+  ctx.fillStyle = "#172a1f"; ctx.fillRect(0, h * 0.5, w, h * 0.5);
+  const R = bossR(), jx = bossHit > 0 ? (rnd() - 0.5) * 12 * u : 0;
+  const bossWolf = { pal: BOSS_PAL, heads: Math.min(5, 2 + runBossLevel), phase: demoT * 3, facing: -1, flash: bossHit > 0 ? 0.05 : 0, biteT: bossHit > 0 ? 0.2 : 0 };
+  if (bossHp > 0 || bossOutro <= 0) drawWolf(bx() + jx, by(), R, bossWolf, { angry: true });
+  if (bossHp > 0) { // crown
+    const cx = bx() + 30 * u, ct = by() - R * 1.45;
+    poly([cx - 40 * u, ct + 22 * u, cx - 40 * u, ct - 22 * u, cx - 20 * u, ct, cx, ct - 34 * u, cx + 20 * u, ct, cx + 40 * u, ct - 22 * u, cx + 40 * u, ct + 22 * u], "#FFD740");
+  }
+  const pr = playerR();
+  const pw = { pal: PLAYER_PAL, heads: clashHeads, phase: demoT * (bossIntro > 0 ? 2 : 12), facing: 1, flash: 0, biteT: clashRemaining > 0 && bossIntro <= 0 ? 0.2 : 0 };
+  if (clashRemaining > 0 || orbs.length) drawWolf(px0(), py0(), pr, pw, { glow: "rgba(64,224,255,0.8)" });
+
+  // orbs flying from player to boss
+  for (const o of orbs) {
+    const t = o.t, x = px0() + (bx() - px0()) * t, y = py0() + (by() - py0()) * t - Math.sin(t * Math.PI) * (80 + o.wob * 40) * u;
+    ctx.globalAlpha = 0.35; circle(x, y, 16 * u, "#40e0ff"); ctx.globalAlpha = 1; circle(x, y, 8 * u, "#e0fbff");
+  }
+
+  // HP bar
+  const bw = Math.min(w * 0.8, 900 * u), x0 = w / 2 - bw / 2, y0 = h * 0.06;
+  text(`ALPHA BOSS  Lv.${runBossLevel}`, w / 2, y0 - 8 * u, 24 * u, "#FF8A80");
+  rrect(x0, y0, x0 + bw, y0 + 30 * u, 15 * u, "#333");
+  if (bossHp > 0) rrect(x0, y0, x0 + bw * bossHp / bossMaxHp, y0 + 30 * u, 15 * u, "#FF3B3B");
+  text(`HP ${Math.max(0, bossHp) | 0} / ${bossMaxHp}`, w / 2, y0 + 22 * u, 18 * u, "#fff", "center", BODY);
+
+  text(String(clashRemaining), px0(), py0() + pr * 1.6, 40 * u, "#82b1ff");
+  text(`mass left · ×${clashHeads} damage per hit`, px0(), py0() + pr * 1.6 + 30 * u, 20 * u, "rgba(255,255,255,0.8)", "center", BODY);
+
+  if (!particlesInWorld) drawParticles();
+  for (const f of floaters) { ctx.globalAlpha = Math.min(1, f.t * 1.5); text(f.s, f.x, f.y, 30 * u, f.c); }
+  ctx.globalAlpha = 1;
+  if (bossIntro > 0 || bossOutro > 0) {
+    ctx.fillStyle = "rgba(0,0,0,0.62)"; ctx.fillRect(0, h * 0.84, w, h * 0.14);
+    const cy = h * 0.905;
+    if (bossIntro > 0) {
+      text(bossIntro > 1.3 ? "KNOCKED OUT!" : "ALPHA CLASH!", w / 2, cy, 50 * u, bossIntro > 1.3 ? "#FF5252" : "#FFD740");
+      text(`Mass ${clashStartMass} × ${clashHeads} head${clashHeads > 1 ? "s" : ""} vs Boss HP ${bossMaxHp}`, w / 2, cy + 38 * u, 22 * u, "#fff", "center", BODY);
+    } else {
+      text(bossDefeated ? "ALPHA DEFEATED!" : "ALPHA SURVIVED", w / 2, cy, 48 * u, bossDefeated ? "#FFD740" : "#FF8A80");
+      text("Damage dealt: " + Math.min(bossDamage, bossMaxHp), w / 2, cy + 38 * u, 24 * u, "#fff", "center", BODY);
+    }
+  }
+}
+function drawRevive() {
+  ctx.fillStyle = "rgba(0,0,0,0.72)"; ctx.fillRect(0, 0, w, h);
+  text("KNOCKED DOWN!", w / 2, h * 0.24, 56 * u, "#FF5252");
+  text("Watch a short ad to get back up", w / 2, h * 0.24 + 46 * u, 26 * u, "#fff", "center", BODY);
+  text("with full hearts.", w / 2, h * 0.24 + 80 * u, 26 * u, "#fff", "center", BODY);
+  const cx = w / 2, cy = h * 0.42, R0 = 56 * u;
+  ctx.strokeStyle = "rgba(255,255,255,0.15)"; ctx.lineWidth = 10 * u; ctx.beginPath(); ctx.arc(cx, cy, R0, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = "#ffc247"; ctx.beginPath(); ctx.arc(cx, cy, R0, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0, reviveT) / 6); ctx.stroke();
+  text(String(Math.ceil(Math.max(0, reviveT))), cx, cy + 18 * u, 50 * u, "#fff");
+  if (reviveWaiting) text("Loading ad…", w / 2, h * 0.56 + 14 * u, 34 * u, "#ffc247");
+  else { button(reviveBtn(), "▶ WATCH AD · REVIVE", "#E0A100"); button(noThanksBtn(), "NO THANKS", "#455A64"); }
+}
+function drawResults() {
+  text(bossDefeated ? "VICTORY!" : "GAME OVER", w / 2, h * 0.12, 64 * u, "#FFD740");
+  const pw = Math.min(w - 40 * u, 620 * u), top = h * 0.16, bot = h * 0.64;
+  rrect(w / 2 - pw / 2, top, w / 2 + pw / 2, bot, 30 * u, "#1b3326");
+  const lx = w / 2 - pw / 2 + 36 * u, rx = w / 2 + pw / 2 - 36 * u, step = Math.min(52 * u, (bot - top - 120 * u) / 9);
+  let y = top + 60 * u;
+  const sec = elapsed | 0;
+  const rows = [
+    ["Survived", `${(sec / 60) | 0}:${String(sec % 60).padStart(2, "0")}`], ["Max mass", Math.round(maxMass)], ["Heads grown", clashHeads],
+    ["Wolves devoured", kills], ["Survival score", survivalScore], [`Boss damage (×${10 * runBossLevel})`, bossDamage],
+    [bossDefeated ? "Alpha bonus (defeated!)" : "Alpha bonus", "+" + (bossDefeated ? 250 * runBossLevel : 0)]
+  ];
+  if (doubled) rows.push(["Ad reward", "Boss score ×2"]);
+  for (const [k, v] of rows) { text(k, lx, y, 24 * u, "rgba(255,255,255,0.8)", "left", BODY); text(String(v), rx, y, 24 * u, "#fff", "right", BODY); y += step; }
+  line(lx, y - step * 0.5, rx, y - step * 0.5, "rgba(255,255,255,0.33)", 2 * u);
+  y += step * 0.4;
+  text("TOTAL", lx, y, 40 * u, "#fff", "left"); text(String(totalScore), rx, y, 40 * u, "#FFD740", "right");
+  y += step;
+  text(newBest ? "NEW BEST SCORE!" : "Best: " + bestScore, w / 2, y, 26 * u, newBest ? "#69F0AE" : "rgba(255,255,255,0.65)", "center", BODY);
+  if (showDouble()) button(doubleBtn(), "▶ WATCH AD · 2× BOSS SCORE", "#E0A100");
+  button(againBtn(), "PLAY AGAIN", "#2979FF"); button(menuBtn(), "MENU", "#455A64");
+  drawParticles();
+}
+function drawOffline() {
+  ctx.fillStyle = "rgba(8,14,11,0.93)"; ctx.fillRect(0, 0, w, h);
+  const cx = w / 2, cy = h * 0.36, checking = net.state === NET.CHECKING, col = checking ? "#FFD740" : "#FF5252";
+  ctx.strokeStyle = col; ctx.lineWidth = 14 * u;
+  for (let i = 1; i <= 3; i++) { ctx.beginPath(); ctx.arc(cx, cy, i * 45 * u, Math.PI * 1.25, Math.PI * 1.75); ctx.stroke(); }
+  circle(cx, cy, 14 * u, col);
+  if (!checking) line(cx - 120 * u, cy - 150 * u, cx + 120 * u, cy + 30 * u, "#FF5252", 14 * u);
+  text(checking ? "Checking connection…" : "No Internet Connection", cx, h * 0.48, 38 * u, "#fff");
+  text("Wolf Clash Arena needs an active", cx, h * 0.48 + 56 * u, 26 * u, "rgba(255,255,255,0.75)", "center", BODY);
+  text("internet connection to play.", cx, h * 0.48 + 94 * u, 26 * u, "rgba(255,255,255,0.75)", "center", BODY);
+  if (!checking) button(retryBtn(), "RETRY", "#2979FF");
+}
+
+// ---------------- loop ----------------
+let last = performance.now();
+function frame(now) {
+  let dt = (now - last) / 1000; last = now; if (dt > 0.05) dt = 0.05;
+  if (w > 0) { update(dt, now); draw(); }
+  requestAnimationFrame(frame);
+}
+resize();
+if (document.fonts && document.fonts.load) { document.fonts.load(`40px ${DISPLAY}`).catch(() => {}); document.fonts.load(`20px ${BODY}`).catch(() => {}); }
+window.__wolf = { get state() { return state; }, get player() { return player; }, startGame, grow: d => playerGrow(d), ko: () => knockOut(), down: () => { hearts = 0; playerDown(); }, get counts() { return [food.length, enemies.length, rabbits.length, particles.length, floaters.length, elapsed | 0]; } };
+requestAnimationFrame(frame);
+cv.focus({ preventScroll: true });
+})();
+</script>

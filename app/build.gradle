@@ -1,0 +1,74 @@
+plugins {
+    id 'com.android.application'
+}
+
+def keystorePropsFile = rootProject.file("keystore.properties")
+def keystoreProps = new Properties()
+if (keystorePropsFile.exists()) {
+    keystoreProps.load(new FileInputStream(keystorePropsFile))
+}
+
+android {
+    namespace 'com.wolfclash.arena'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.wolfclash.arena"
+        minSdk 24
+        targetSdk 36
+        versionCode 4
+        versionName "1.3"
+
+        // Your real AdMob IDs (used in release builds: the Play Store AAB/APK)
+        manifestPlaceholders = [admobAppId: "ca-app-pub-1765077834611057~7754500301"]
+        buildConfigField "String", "ADMOB_REWARDED", '"ca-app-pub-1765077834611057/1000942582"'
+        buildConfigField "String", "ADMOB_INTERSTITIAL", '"ca-app-pub-1765077834611057/8687860914"'
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    signingConfigs {
+        release {
+            if (keystorePropsFile.exists()) {
+                storeFile rootProject.file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        // Debug builds (Run ▶ from Android Studio) use Google's test IDs, so testing on your
+        // phone never counts as invalid traffic on your AdMob account.
+        debug {
+            manifestPlaceholders = [admobAppId: "ca-app-pub-3940256099942544~3347511713"]
+            buildConfigField "String", "ADMOB_REWARDED", '"ca-app-pub-3940256099942544/5224354917"'
+            buildConfigField "String", "ADMOB_INTERSTITIAL", '"ca-app-pub-3940256099942544/1033173712"'
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    lint {
+        // Don't let lint warnings block the release build
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // Google AdMob (rewarded + interstitial ads)
+    implementation 'com.google.android.gms:play-services-ads:25.5.0'
+    // Google consent form (GDPR / EEA, UK, Switzerland)
+    implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
+}
