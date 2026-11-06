@@ -16,8 +16,8 @@ android {
         applicationId "com.wolfclash.arena"
         minSdk 24
         targetSdk 36
-        versionCode 4
-        versionName "1.3"
+        versionCode 5
+        versionName "1.4"
 
         // Your real AdMob IDs (used in release builds: the Play Store AAB/APK)
         manifestPlaceholders = [admobAppId: "ca-app-pub-1765077834611057~7754500301"]
