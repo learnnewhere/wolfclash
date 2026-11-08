@@ -11,6 +11,16 @@ public class WolfAds {
     }
 
     @JavascriptInterface
+    public boolean needsAge() {
+        return ads.needsAge();
+    }
+
+    @JavascriptInterface
+    public void setBirthYear(int year) {
+        ads.setBirthYear(year);
+    }
+
+    @JavascriptInterface
     public boolean rewardedReady() {
         return ads.rewardedReady();
     }

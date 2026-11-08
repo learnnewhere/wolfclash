@@ -1,6 +1,8 @@
 package com.wolfclash.arena;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.webkit.WebView;
@@ -10,6 +12,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.ads.rewarded.RewardedAd;
@@ -18,12 +21,18 @@ import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
 import com.google.android.ump.UserMessagingPlatform;
 
+import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Loads and shows AdMob ads, and asks for privacy consent first (required for players in the
  * EEA, UK and Switzerland). Results are reported to the game page through
  * window.onAdReward(tag, earned) and window.onAdClosed().
+ *
+ * Before any ad or consent request the player is asked for their birth year (a neutral age
+ * screen in the game page). The year is stored only on the device and is used to tag requests:
+ * under 13 = child-directed treatment, under 16 = under the age of consent (no personalised ads,
+ * no consent form), and every request is capped at a Teen ad content rating.
  */
 public class AdsManager {
     private static final long RETRY_MS = 30000;
@@ -33,6 +42,8 @@ public class AdsManager {
     private final Activity activity;
     private final WebView web;
     private final ConsentInformation consent;
+    private final SharedPreferences prefs;
+    private final AtomicBoolean started = new AtomicBoolean(false);
     private final Handler main = new Handler(Looper.getMainLooper());
     private final AtomicBoolean sdkStarted = new AtomicBoolean(false);
 
@@ -45,11 +56,48 @@ public class AdsManager {
         this.activity = activity;
         this.web = web;
         this.consent = UserMessagingPlatform.getConsentInformation(activity);
+        this.prefs = activity.getSharedPreferences("wolf", Context.MODE_PRIVATE);
     }
 
-    /** Call once from onCreate. Shows the consent form when needed, then starts the ads SDK. */
+    // ---------------------------------------------------------------- age
+    /** True until the player has answered the age screen. */
+    public boolean needsAge() {
+        return prefs.getInt("birthYear", 0) == 0;
+    }
+
+    /** Called from the age screen. Stores the year on the device and starts consent + ads. */
+    public void setBirthYear(int year) {
+        int now = Calendar.getInstance().get(Calendar.YEAR);
+        if (year < now - 120 || year > now) return;
+        prefs.edit().putInt("birthYear", year).apply();
+        main.post(this::start);
+    }
+
+    /** Age in whole years, rounded down to the younger possibility (year only is known). */
+    private int age() {
+        int year = prefs.getInt("birthYear", 0);
+        return Calendar.getInstance().get(Calendar.YEAR) - year - 1;
+    }
+
+    /** Call from onCreate (does nothing until the age screen was answered). */
     public void start() {
-        ConsentRequestParameters params = new ConsentRequestParameters.Builder().build();
+        if (needsAge() || started.getAndSet(true)) return;
+        int age = age();
+        boolean child = age < 13, underConsentAge = age < 16;
+        MobileAds.setRequestConfiguration(new RequestConfiguration.Builder()
+                .setTagForChildDirectedTreatment(child
+                        ? RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+                        : RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
+                .setTagForUnderAgeOfConsent(underConsentAge
+                        ? RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+                        : RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+                .setMaxAdContentRating(child
+                        ? RequestConfiguration.MAX_AD_CONTENT_RATING_G
+                        : RequestConfiguration.MAX_AD_CONTENT_RATING_T)
+                .build());
+        ConsentRequestParameters params = new ConsentRequestParameters.Builder()
+                .setTagForUnderAgeOfConsent(underConsentAge)
+                .build();
         consent.requestConsentInfoUpdate(activity, params,
                 () -> UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity, formError -> {
                     if (consent.canRequestAds()) startSdk();
