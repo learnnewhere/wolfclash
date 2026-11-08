@@ -3,7 +3,7 @@
 Run, eat and grow in a forest arena. Bigger wolves hunt you; as your wolf grows it sprouts extra heads, up to five.
 When you're knocked out, your wolf clashes the Alpha boss and its size becomes bonus score. Needs internet to play. Free with AdMob ads.
 
-- Package: `com.wolfclash.arena` · current version **1.3 (versionCode 4)** · minSdk 24 · targetSdk 36
+- Package: `com.wolfclash.arena` · current version **1.5 (versionCode 6)** · minSdk 24 · targetSdk 36
 - Privacy policy: https://learnnewhere.github.io/wolfclash-privacy/
 
 ## What's in this repo
@@ -26,11 +26,11 @@ When you're knocked out, your wolf clashes the Alpha boss and its size becomes b
 ## Build a new release
 
 1. Make your change (game code is `app/src/main/assets/index.html`).
-2. In `app/build.gradle` bump `versionCode` (next is **5**) and `versionName`. Also update the version in the two workflow files' file names if you like.
+2. In `app/build.gradle` bump `versionCode` (next is **7**) and `versionName`. The workflows name the files from versionName automatically.
 3. Push to GitHub, open **Actions → Build unsigned AAB → Run workflow**, wait ~4 minutes, download the artifact zip.
 4. Sign it on your Mac:
    ```bash
-   tools/sign-release.sh ~/Downloads/WolfClashArena-1.3-ads-unsigned.zip ~/path/to/upload-keystore.p12
+   tools/sign-release.sh ~/Downloads/WolfClashArena-1.5-ads-unsigned.zip ~/path/to/upload-keystore.p12
    ```
    It asks for the keystore password and writes the signed `.aab` and `.apk` next to the zip.
 5. Upload the `.aab` in Play Console.
