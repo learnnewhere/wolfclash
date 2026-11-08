@@ -15,12 +15,14 @@ Last updated: 6 November 2026. Built with Claude (Cowork) in a cloud sandbox.
 6. **Fixes:** boss screen clipped the player on narrow phones; touch-aware hints; Android 13+ back gesture (OnBackInvokedCallback); targetSdk 36.
 7. **Play Store prep:** icon, feature graphic, 4 screenshots, listing text, privacy policy hosted on GitHub Pages.
 8. **Ad-enabled AAB 1.3 (versionCode 4)** built on GitHub Actions (unsigned) and signed with upload key v3.
+9. **1.4 (versionCode 5)**: first AAB accepted by Play (registered v3 as upload key). Closed test "Closed testing - Alpha" approved and live; testers via Google Groups testers-community@ and roughtough@googlegroups.com (Testers Community).
+10. **1.5 (versionCode 6), EU privacy hardening**: fonts bundled in the app (no Google Fonts request); neutral birth-year screen on first launch (stored on device only) that tags ad/consent requests: under 13 child-directed + G rating, under 16 under-age-of-consent; all ads capped at T. Privacy policy updated (8 Nov 2026) and its page no longer loads Google Fonts. No session replay/analytics SDKs; no purchases/subscriptions.
 
 ## IDs and settings
 | Item | Value |
 |---|---|
 | Package | `com.wolfclash.arena` |
-| Version | 1.3, versionCode 4 (next upload: 5) |
+| Version | 1.5, versionCode 6 (next upload: 7) |
 | SDK | minSdk 24, targetSdk/compileSdk 36, Java 17, AGP 8.13.0, Gradle 8.13 |
 | AdMob App ID | `ca-app-pub-1765077834611057~7754500301` |
 | Rewarded unit | `ca-app-pub-1765077834611057/1000942582` |
