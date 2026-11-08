@@ -8,7 +8,8 @@ Read first: `PROJECT-HISTORY.md` (state, IDs, what's done, what's next) and the 
 - Game = `app/src/main/assets/index.html` (canvas, WebView). Browser copy in `web/wolf-clash-arena.html`; keep both in sync (the asset version adds a doctype wrapper + safe-area padding).
 - JS ↔ Android: `window.WolfBridge` (netState/retry), `window.WolfAds` (rewardedReady, interstitialReady, showRewarded(tag), showInterstitial, privacyRequired, showPrivacy). Android calls back `onAndroidBack`, `onAndroidPause`, `onAdReward(tag, ok)`, `onAdClosed()`.
 - AdMob real IDs are in `app/build.gradle` defaultConfig; debug build type uses Google test IDs. Don't change the real IDs.
-- Current release: 1.3 / versionCode 4. **Bump versionCode for every upload.**
+- Current release: 1.5 / versionCode 6. **Bump versionCode for every upload.**
+- EU privacy rules kept in the app: no remote fonts (fonts embedded as data URIs), neutral age screen before ads (WolfAds.needsAge/setBirthYear), no analytics/session replay, no purchases. Keep it that way or re-review.
 - targetSdk must follow Play's current rule (36 as of Nov 2026). Check before each release.
 
 ## How releases are built
