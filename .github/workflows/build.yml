@@ -40,13 +40,15 @@ jobs:
 
       - name: Collect files
         run: |
+          VER=$(grep -m1 'versionName' app/build.gradle | cut -d'"' -f2)
+          echo "VER=$VER" >> "$GITHUB_ENV"
           mkdir -p out
-          cp app/build/outputs/bundle/release/*.aab out/WolfClashArena-1.3-ads.aab
-          cp app/build/outputs/apk/release/*.apk out/WolfClashArena-1.3-ads.apk
+          cp app/build/outputs/bundle/release/*.aab out/WolfClashArena-${VER}-ads.aab
+          cp app/build/outputs/apk/release/*.apk out/WolfClashArena-${VER}-ads.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: WolfClashArena-1.3-ads
+          name: WolfClashArena-${{ env.VER }}-ads
           path: out/
           retention-days: 14
 
