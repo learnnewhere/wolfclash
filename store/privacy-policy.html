@@ -12,8 +12,8 @@
   --line: #d9e2db;
   --accent: #2f6fd6;
   --amber: #a86a00;
-  --display: "Bungee", "Arial Black", Impact, sans-serif;
-  --body: "Rubik", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --display: "Arial Black", "Helvetica Neue", Impact, sans-serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -58,7 +58,7 @@ code { font-size: 0.92em; user-select: all; }
   <header>
     <div class="brand">WOLF CLASH <span>ARENA</span></div>
     <h1>Privacy Policy</h1>
-    <p class="meta">Effective 2 November 2026 · App ID <code>com.wolfclash.arena</code> · Developer: Vignesh V</p>
+    <p class="meta">Effective 8 November 2026 · App ID <code>com.wolfclash.arena</code> · Developer: Vignesh V</p>
   </header>
 
   <section>
@@ -69,7 +69,7 @@ code { font-size: 0.92em; user-select: all; }
     <h2>The short version</h2>
     <ul>
       <li>I don't ask for your name, email, contacts, photos or account. There is no sign-in.</li>
-      <li>Your best score and boss level are saved only on your device.</li>
+      <li>Your best score, boss level and the birth year you enter are saved only on your device.</li>
       <li>The app shows ads from Google AdMob. Google collects some device data to show and measure those ads, as described below.</li>
       <li>Players in the European Economic Area, the UK and Switzerland are asked for consent before ads are personalised, and can change that choice at any time.</li>
     </ul>
@@ -77,7 +77,12 @@ code { font-size: 0.92em; user-select: all; }
 
   <section>
     <h2>Information stored on your device</h2>
-    <p>The app saves your best score, your Alpha boss level and a counter used to space out full-screen ads. This stays on your device. It is never sent to me. Uninstalling the app or clearing its storage deletes it.</p>
+    <p>The app saves your best score, your Alpha boss level, a counter used to space out full-screen ads and the birth year you enter on first launch. This stays on your device. It is never sent to me. Uninstalling the app or clearing its storage deletes it.</p>
+  </section>
+
+  <section>
+    <h2>Age check</h2>
+    <p>On first launch the app asks for your year of birth. The year is stored only on your device and is never sent to me or to Google. It is used only to set how ads are requested: if you are under 16, ad requests are marked as coming from someone under the age of consent, so Google shows only non-personalised ads and does not ask for consent; if you are under 13, requests are also marked as child-directed and limited to ads suitable for all ages. For everyone, ads are limited to content rated for teens.</p>
   </section>
 
   <section>
@@ -108,7 +113,7 @@ code { font-size: 0.92em; user-select: all; }
 
   <section>
     <h2>Internet connection</h2>
-    <p>The game needs an internet connection to play. To check that you are online, the app regularly makes a small request to Google's connectivity check service (and to Cloudflare as a fallback). The game screen also loads its fonts from Google Fonts. Like any web request, these reveal your IP address to those services. The app sends no other information with them.</p>
+    <p>The game needs an internet connection to play. To check that you are online, the app regularly makes a small request to Google's connectivity check service (and to Cloudflare as a fallback). Like any web request, these reveal your IP address to those services. The app sends no other information with them. The game's fonts are built into the app, so no request is made to Google Fonts.</p>
   </section>
 
   <section>
